@@ -4,6 +4,7 @@ public enum MsgType {
     MSG_LOGIN, //登录
     MSG_REGISTER, //注册
     MSG_HOME, //个人主页
+    MSG_DELETE_USER, //注销帐号
     MSG_LIST_FRIEND, //好友列表
     MSG_FRIEND_REQUEST, //好友申请
     MSG_NOTICE, //实时通知申请
@@ -28,7 +29,9 @@ public enum MsgType {
     MSG_REMOVE_MANAGER, //移除管理员
     MSG_GROUP_CHAT, //群聊
     MSG_SEND_MESSAGE2, //群聊消息
-    MSG_SEND_FILE, //发送文件
+    MSG_SEND_FILE, //私聊发送文件
+    MSG_RECEIVE_FILE, //接收文件
+    MSG_SEND_GROUP_FILE, //群聊发送文件
     MSG_BLOCK, //屏蔽
     MSG_UNBLOCK, //取消屏蔽
     MSG_FRIEND_MENU, //好友菜单
