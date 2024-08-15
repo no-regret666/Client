@@ -197,7 +197,6 @@ public class SendService {
             System.out.println("h.注销帐号");
             System.out.println("q.退出登录");
             System.out.println("z.刷新");
-            System.out.println();
             if (!fromUsers.isEmpty()) {
                 for (String fromUser : fromUsers) {
                     System.out.println(Utils.getColoredString(33, 1, fromUser + " 申请添加为好友!"));
@@ -797,8 +796,7 @@ public class SendService {
             try {
                 File file = new File(fileURL);
                 int port = ClientHandler.queue.take();
-                InetAddress address = InetAddress.getByName("noregret-arch");
-                String ip = address.getHostAddress();
+                String ip = Utils.getIP();
                 new SendFileThread(port, ip, file).start();
             } catch (Exception e) {
                 e.printStackTrace();
