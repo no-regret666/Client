@@ -29,7 +29,7 @@ public class RecvFileThread extends Thread {
         try{
             DataInputStream dis = new DataInputStream(socket.getInputStream());
             String filename = dis.readUTF();
-            FileOutputStream fos = new FileOutputStream("received_file/" + filename);
+            FileOutputStream fos = new FileOutputStream(filename);
             byte[] buffer = new byte[1024];
             int len;
             while((len = dis.read(buffer)) != -1){
