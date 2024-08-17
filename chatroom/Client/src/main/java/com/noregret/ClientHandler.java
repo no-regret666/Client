@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.concurrent.SynchronousQueue;
 
 @Slf4j
@@ -115,7 +114,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
             } else if (String.valueOf(MsgType.MSG_SEND_FILE).equals(type) || String.valueOf(MsgType.MSG_SEND_GROUP_FILE).equals(type)) {
                 int port = node.get("port").asInt();
                 queue.put(port);
-            }else if(String.valueOf(MsgType.MSG_UPLOAD_FILE).equals(type)){
+            }else if(String.valueOf(MsgType.MSG_DOWNLOAD_FILE).equals(type)){
                 int port = node.get("port").asInt();
                 queue.put(port);
             }

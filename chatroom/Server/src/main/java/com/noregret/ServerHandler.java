@@ -16,7 +16,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        log.debug("Server received message: {}", msg);
+        log.info("Server received message: {}", msg);
         if (msg instanceof String response) {
             processMsg.init(ctx);
             processMsg.sendResponse(response);
@@ -34,6 +34,6 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        log.debug(cause.getMessage(), cause);
+        log.error(cause.getMessage(), cause);
     }
 }

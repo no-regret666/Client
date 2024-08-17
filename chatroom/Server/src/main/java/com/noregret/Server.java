@@ -37,12 +37,12 @@ public class Server {
                             pipeline.addLast(new StringEncoder());
                             pipeline.addLast(new StringDecoder());
                             //用来判断是不是读/写空闲过长
-                            //5s内如果没有收到channel的数据，会触发一个IdleState#READER_IDLE事件
+                            //60s内如果没有收到channel的数据，会触发一个IdleState#READER_IDLE事件
                             pipeline.addLast(new IdleStateHandler(60, 0, 0));
                             //ChannelDuplexHandler 可以同时作为入站和出站处理器
                             pipeline.addLast(new ChannelDuplexHandler(){
                                 @Override
-                                public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+                                public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
                                     IdleStateEvent event = (IdleStateEvent) evt;
                                     //触发了读空闲事件
                                     if(event.state() == IdleState.READER_IDLE){
@@ -52,7 +52,7 @@ public class Server {
                                 }
                             });
                             pipeline.addLast(serverHandler);
-                            pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));
+                            pipeline.addLast(new LoggingHandler(LogLevel.INFO));
                         }
                     });
             Channel channel = bootstrap.bind(port).sync().channel();

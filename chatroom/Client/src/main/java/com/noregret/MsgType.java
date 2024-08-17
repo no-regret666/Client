@@ -38,6 +38,6 @@ public enum MsgType {
     MSG_BLOCK_MEMBER, //群禁言
     MSG_UNBLOCK_MEMBER, //解除禁言
     MSG_GET_STATUS, //获取状态 (1:好友屏蔽 2:群聊禁言)
-    MSG_UPLOAD_FILE, //下载文件
+    MSG_DOWNLOAD_FILE, //下载文件
     MSG_PING //心跳包
 }

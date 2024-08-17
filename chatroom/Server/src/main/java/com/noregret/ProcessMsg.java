@@ -205,6 +205,7 @@ public class ProcessMsg {
             ChannelHandlerContext ctx = online1.get(username);
             online1.remove(username);
             online2.remove(ctx);
+            log.info("用户 {} 下线!",username);
         } else if (String.valueOf(MsgType.MSG_FRIEND_MESSAGE).equals(type)) {
             String username = msg.get("username").asText();
             String friendName = msg.get("friendName").asText();
@@ -427,7 +428,7 @@ public class ProcessMsg {
             groupMapper.deleteMember(groupName, username);
         } else if (String.valueOf(MsgType.MSG_BREAK_GROUP).equals(type)) {
             String groupName = msg.get("groupName").asText();
-            groupMapper.deleteGroup(groupName);
+            groupMapper.breakGroup(groupName);
             requestMapper.breakGroup(groupName);
             messageMapper2.breakGroup(groupName);
         } else if (String.valueOf(MsgType.MSG_REMOVE_MEMBER).equals(type)) {
@@ -543,12 +544,21 @@ public class ProcessMsg {
             userMapper.deleteUser(username);
             requestMapper.deleteUser(username);
             messageMapper1.deleteUser(username);
-            messageMapper2.deleteUser(username);
             friendMapper.deleteUser(username);
+            fileRequestMapper.deleteUser(username);
+            List<String> groups = groupMapper.getGroups2(username);
+            if (!groups.isEmpty()) {
+                for (String group : groups) {
+                    groupMapper.breakGroup(group);
+                    requestMapper.breakGroup(group);
+                    messageMapper2.breakGroup(group);
+                }
+            }
             groupMapper.deleteUser(username);
             ChannelHandlerContext ctx = online1.get(username);
             online1.remove(username);
             online2.remove(ctx);
+            log.info("用户 {} 注销帐号!", username);
         }else if(String.valueOf(MsgType.MSG_SEND_GROUP_FILE).equals(type)){
             String from = msg.get("from").asText();
             String to = msg.get("to").asText();
@@ -596,14 +606,14 @@ public class ProcessMsg {
                 node.put("status", status);
                 send(node, channel);
             }
-        }else if(String.valueOf(MsgType.MSG_UPLOAD_FILE).equals(type)){
+        }else if(String.valueOf(MsgType.MSG_DOWNLOAD_FILE).equals(type)){
             int fileID = msg.get("fileID").asInt();
             String filename = fileMapper.selectFilename(fileID);
             int toPort = getFreePort();
             new SendFileThread(toPort,fileID,filename).start();
 
             ObjectNode node = mapper.createObjectNode();
-            node.put("type", String.valueOf(MsgType.MSG_UPLOAD_FILE));
+            node.put("type", String.valueOf(MsgType.MSG_DOWNLOAD_FILE));
             node.put("port", toPort);
             send(node, channel);
 

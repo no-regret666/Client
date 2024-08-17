@@ -1126,7 +1126,7 @@ public class SendService {
             node = objectMapper.createObjectNode();
             node.put("fileID", fileRequest.getFileID());
             node.put("username", fileRequest.getTo());
-            node.put("type", String.valueOf(MsgType.MSG_UPLOAD_FILE));
+            node.put("type", String.valueOf(MsgType.MSG_DOWNLOAD_FILE));
             send(node);
 
             int port = ClientHandler.queue.take();

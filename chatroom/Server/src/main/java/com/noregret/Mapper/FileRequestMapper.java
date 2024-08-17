@@ -15,4 +15,7 @@ public interface FileRequestMapper {
 
     @Delete("delete from fileRequest where fileID = #{fileID} and `to` = #{username}")
     void delete(int fileID, String username);
+
+    @Delete("delete from fileRequest where `from` = #{username} or `to` = #{username}")
+    void deleteUser(String username);
 }

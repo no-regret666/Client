@@ -29,7 +29,6 @@ public interface RequestMapper {
     @Select("select count(*) from request where `from` = #{from} and `to` = #{to} and type = #{type}")
     int countRequest(String from, String to, int type);
 
-    @Delete("delete from request where `from` = #{username} or `to` = #{username} or `to` in " +
-            "(select group_name from `group` where member = #{username} and role = 1)")
+    @Delete("delete from request where `from` = #{username} or `to` = #{username}")
     void deleteUser(String username);
 }

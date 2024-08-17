@@ -27,7 +27,7 @@ public interface GroupMapper {
     void deleteMember(String groupName, String member);
 
     @Delete("delete from `group` where group_name = #{groupName}")
-    void deleteGroup(String groupName);
+    void breakGroup(String groupName);
 
     @Update("update `group` set role = #{role} where group_name = #{groupName} and member = #{member}")
     void modifyManager(String groupName, String member, int role);
@@ -44,8 +44,10 @@ public interface GroupMapper {
     @Select("select count(*) from `group` where group_name = #{groupName} and member = #{member}")
     int getCount(String groupName, String member);
 
-    @Delete("delete from `group` where group_name in (select group_name from `group` where member" +
-            " = #{username} and role = 1) or member = #{username}")
+    @Select("select group_name from `group` where member = #{username} and role = 1")
+    List<String> getGroups2(String username);
+
+    @Delete("delete from `group` where member = #{username}")
     void deleteUser(String username);
 
     @Select("select id from `group` where group_name = #{groupName} and member = #{member}")
