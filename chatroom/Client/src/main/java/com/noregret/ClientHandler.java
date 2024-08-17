@@ -4,16 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.SynchronousQueue;
 
+@Slf4j
 public class ClientHandler extends ChannelInboundHandlerAdapter {
     public static SynchronousQueue<Integer> queue = new SynchronousQueue<>();
     public static SynchronousQueue<Object> queue2 = new SynchronousQueue<>();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        // System.out.println("Client received: " + msg);
+        //log.info("Client received: {}", msg);
         if (msg instanceof String response) {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);

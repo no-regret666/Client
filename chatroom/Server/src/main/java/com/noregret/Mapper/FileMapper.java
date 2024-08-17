@@ -13,4 +13,8 @@ public interface FileMapper {
 
     @Select("select id from file where filename = #{filename} and time = #{time}")
     Integer selectID(String filename, Timestamp time);
+
+    @Select("select filename from file where id = #{id}")
+    String selectFilename(Integer id);
+
 }

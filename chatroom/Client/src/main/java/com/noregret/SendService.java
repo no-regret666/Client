@@ -9,12 +9,15 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
 import org.apache.commons.mail.HtmlEmail;
 import com.noregret.Pojo.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.sql.Timestamp;
 import java.util.*;
 
 public class SendService {
+    private static final Logger log = LoggerFactory.getLogger(SendService.class);
     private final Channel channel;
     Scanner sc = new Scanner(System.in);
     Console console = System.console();
@@ -153,7 +156,7 @@ public class SendService {
             send.setMsg("你好!你的验证码为" + checkCode);
             send.send();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
@@ -477,7 +480,7 @@ public class SendService {
         send(node);
     }
 
-    public void privateChat(String username, String friendName) throws InterruptedException, IOException {
+    public void privateChat(String username, String friendName) throws InterruptedException{
         ObjectMapper objectMapper = new ObjectMapper();
         System.out.println("开始聊天!(按q退出)");
         ObjectNode node;
@@ -526,12 +529,15 @@ public class SendService {
             node.put("time", time.toString());
             try {
                 File file = new File(fileURL);
+                if (!file.exists()) {
+                    throw new FileNotFoundException();
+                }
+                send(node);
                 int port = ClientHandler.queue.take();
                 String ip = Utils.getIP();
                 new SendFileThread(port, ip, file).start();
-                send(node);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error(Utils.getColoredString(31, 1, "文件路径不对!"));
             }
         }
     }
@@ -677,7 +683,7 @@ public class SendService {
             System.out.println("-----------------------------");
             System.out.println("a.群成员");
             System.out.println("b.群聊");
-            // System.out.println("c.发送文件");
+            System.out.println("c.发送文件");
             if (role == 2 || role == 3) {
                 System.out.println("d.退出群组");
             } else {
@@ -699,9 +705,9 @@ public class SendService {
                 case 'b':
                     groupChat(username, groupName);
                     break;
-//                case 'c':
-//                    sendGroupFile(username, groupName);
-//                    break;
+                case 'c':
+                    sendGroupFile(username, groupName);
+                    break;
                 case 'd':
                     if (role == 1) {
                         breakGroup(groupName);
@@ -722,7 +728,7 @@ public class SendService {
         }
     }
 
-    public void groupChat(String username, String groupName) throws InterruptedException, IOException {
+    public void groupChat(String username, String groupName) throws InterruptedException {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node;
         System.out.println("开始聊天!(按q退出)");
@@ -782,20 +788,19 @@ public class SendService {
             node.put("filename", urlComponents[urlComponents.length - 1]);
         }
         node.put("type", String.valueOf(MsgType.MSG_SEND_GROUP_FILE));
-        send(node);
-
-        int status = ClientHandler.queue.take();
-        if (status == 0) {
-            try {
-                File file = new File(fileURL);
-                int port = ClientHandler.queue.take();
-                String ip = Utils.getIP();
-                new SendFileThread(port, ip, file).start();
-            } catch (Exception e) {
-                e.printStackTrace();
+        Timestamp time = new Timestamp(System.currentTimeMillis());
+        node.put("time", time.toString());
+        try {
+            File file = new File(fileURL);
+            if (!file.exists()) {
+                throw new FileNotFoundException();
             }
-        } else if (status == 1) {
-            System.out.println("群组当前无人在线!");
+            send(node);
+            int port = ClientHandler.queue.take();
+            String ip = Utils.getIP();
+            new SendFileThread(port, ip, file).start();
+        } catch (Exception e) {
+            log.error(Utils.getColoredString(31, 1, "文件路径不对!"));
         }
     }
 
@@ -1091,7 +1096,7 @@ public class SendService {
             HashMap<Integer, FileRequest> map = new HashMap<>();
             for (FileRequest fileRequest : fileRequests1) {
                 map.put(i, fileRequest);
-                System.out.println(i + "." + fileRequest.getFrom() + "发送的" + fileRequest.getFilename());
+                System.out.println(i + "." + fileRequest.getFrom() + " 发送的 " + fileRequest.getFilename());
                 i++;
             }
             System.out.println("选择你要接收的文件:");
@@ -1100,6 +1105,7 @@ public class SendService {
 
             node = objectMapper.createObjectNode();
             node.put("fileID", fileRequest.getFileID());
+            node.put("username", fileRequest.getTo());
             node.put("type", String.valueOf(MsgType.MSG_UPLOAD_FILE));
             send(node);
 

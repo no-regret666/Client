@@ -1,10 +1,7 @@
 package com.noregret.Mapper;
 
 import com.noregret.Pojo.FileRequest;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -16,6 +13,6 @@ public interface FileRequestMapper {
     @Select("select * from fileRequest where `to` = #{username} and status = 2")
     List<FileRequest> findByUsername(String username);
 
-    @Update("update fileRequest set status = 1 where status = 2")
-    void updateStatus(int fileID);
+    @Delete("delete from fileRequest where fileID = #{fileID} and `to` = #{username}")
+    void delete(int fileID, String username);
 }

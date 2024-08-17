@@ -10,11 +10,12 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-
+@Slf4j
 @Component
 public class Client {
     public void init(String host, int port) {
@@ -40,6 +41,7 @@ public class Client {
             Channel channel = bootstrap.connect(host, port).sync().channel();
             channel.config().setOption(ChannelOption.SO_SNDBUF, 65535);
             SendService sendService = new SendService(channel);
+
             group.submit(() -> {
                 try {
                     sendService.menu();

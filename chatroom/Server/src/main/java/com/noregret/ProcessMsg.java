@@ -17,7 +17,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Queue;
 
 @Component
 public class ProcessMsg {
@@ -525,44 +524,28 @@ public class ProcessMsg {
         }else if(String.valueOf(MsgType.MSG_SEND_GROUP_FILE).equals(type)){
             String from = msg.get("from").asText();
             String to = msg.get("to").asText();
+            String time = msg.get("time").asText();
+            Timestamp time2 = Timestamp.valueOf(time.substring(0,19));
+            String filename = msg.get("filename").asText();
+            fileMapper.insert(filename,time2);
+            int fileID = fileMapper.selectID(filename,time2);
             List<String> members = groupMapper.getMemberNames(to);
-            int code = 1;
-            int fromPort = getFreePort();
             if (!members.isEmpty()) {
                 for (String member : members) {
-                    if(from.equals(member)){
+                    if (member.equals(from)) {
                         continue;
                     }
-                    if(isExist(member)){
-                        code = 0;
-                        int toPort = getFreePort();
-                        new RecvFileThread(fromPort,toPort).start();
-
-                        //发送给接收者
-                        ObjectNode node1 = mapper.createObjectNode();
-                        node1.put("from",from);
-                        node1.put("to",to);
-                        node1.put("type", String.valueOf(MsgType.MSG_RECEIVE_FILE));
-                        node1.put("port", toPort);
-                        node1.put("code",2); //群聊接收文件
-                        ChannelHandlerContext ctx = online1.get(member);
-                        send(node1, ctx);
-                    }
+                    fileRequestMapper.insert(fileID,to,member,2,filename);
                 }
             }
-            if(code == 0){
-                ObjectNode node2 = mapper.createObjectNode();
-                node2.put("type", String.valueOf(MsgType.MSG_SEND_GROUP_FILE));
-                node2.put("port", fromPort);
-                node2.put("code", 0); //告诉发送者有人在线
-                send(node2, channel);
-            }
-            if(code == 1){
-                ObjectNode node2 = mapper.createObjectNode();
-                node2.put("type", String.valueOf(MsgType.MSG_SEND_GROUP_FILE));
-                node2.put("code", 1); //告诉发送者无人在线
-                send(node2, channel);
-            }
+
+            int fromPort = getFreePort();
+            new RecvFileThread(fromPort,fileID).start();
+
+            ObjectNode node = mapper.createObjectNode();
+            node.put("type", String.valueOf(MsgType.MSG_SEND_FILE));
+            node.put("port",fromPort);
+            send(node, channel);
         }else if(String.valueOf(MsgType.MSG_GET_STATUS).equals(type)){
             int code = msg.get("code").asInt();
             if(code == 1) {
@@ -587,14 +570,17 @@ public class ProcessMsg {
             }
         }else if(String.valueOf(MsgType.MSG_UPLOAD_FILE).equals(type)){
             int fileID = msg.get("fileID").asInt();
+            String filename = fileMapper.selectFilename(fileID);
             int toPort = getFreePort();
-            new SendFileThread(toPort,fileID).start();
+            new SendFileThread(toPort,fileID,filename).start();
 
             ObjectNode node = mapper.createObjectNode();
             node.put("type", String.valueOf(MsgType.MSG_UPLOAD_FILE));
             node.put("port", toPort);
             send(node, channel);
-            fileRequestMapper.updateStatus(fileID);
+
+            String username = msg.get("username").asText();
+            fileRequestMapper.delete(fileID,username);
         }
     }
 
