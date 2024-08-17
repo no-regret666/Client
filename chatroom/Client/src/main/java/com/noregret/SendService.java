@@ -266,6 +266,10 @@ public class SendService {
     public void addFriend(String username) throws InterruptedException {
         System.out.println("请输入你要添加的好友用户名:");
         String friendName = sc.nextLine();
+        if(username.equals(friendName)) {
+            System.out.println("自己不能添加自己!");
+            return;
+        }
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node = objectMapper.createObjectNode();
         node.put("username", username);
@@ -919,13 +923,14 @@ public class SendService {
             int i = 1, j = 1, k = 1;
             HashMap<Integer, Member> map = new HashMap<>();
             for (Member member : members) {
-                map.put(k, member);
                 if (member.getRole() == 1) {
+                    map.put(k, member);
                     System.out.println(Utils.getColoredString(34, 1, "群主:"));
                     System.out.println(k + "." + member.getMember());
                     k++;
                 }
                 if (member.getRole() == 2) {
+                    map.put(k, member);
                     if (i == 1) {
                         System.out.println(Utils.getColoredString(34, 1, "管理员:"));
                         System.out.print(k + "." + member.getMember());
@@ -943,6 +948,7 @@ public class SendService {
             }
             for (Member member : members) {
                 if (member.getRole() == 3) {
+                    map.put(k, member);
                     if (j == 1) {
                         System.out.println(Utils.getColoredString(34, 1, "普通成员:"));
                         System.out.print(k + "." + member.getMember());
@@ -955,6 +961,7 @@ public class SendService {
                     } else {
                         System.out.println();
                     }
+                    k++;
                 }
             }
             System.out.println("----------------------------");
