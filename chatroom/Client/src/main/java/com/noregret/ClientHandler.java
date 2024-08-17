@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.util.concurrent.SynchronousQueue;
 
 @Slf4j
@@ -15,7 +16,7 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //log.info("Client received: {}", msg);
+        //log.debug("Client received: {}", msg);
         if (msg instanceof String response) {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(response);
@@ -119,12 +120,27 @@ public class ClientHandler extends ChannelInboundHandlerAdapter {
                 queue.put(port);
             }
             else if (String.valueOf(MsgType.MSG_GET_STATUS).equals(type)) {
-                int status = node.get("status").asInt();
-                queue.put(status);
+                int code = node.get("code").asInt();
+                queue.put(code);
+                if(code == 0) {
+                    int status = node.get("status").asInt();
+                    queue.put(status);
+                }
             } else if (String.valueOf(MsgType.MSG_RECEIVE_FILE).equals(type)) {
                 String fileRequests = node.get("fileRequests").asText();
                 queue2.put(fileRequests);
             }
         }
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx){
+        log.debug("连接已断开...");
+        System.exit(1);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.debug(cause.getMessage(),cause);
     }
 }

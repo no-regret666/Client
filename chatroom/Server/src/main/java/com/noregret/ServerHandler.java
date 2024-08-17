@@ -16,9 +16,8 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        System.out.println(msg);
+        log.debug("Server received message: {}", msg);
         if (msg instanceof String response) {
-            System.out.println("Server Received: " + msg);
             processMsg.init(ctx);
             processMsg.sendResponse(response);
         }
@@ -27,7 +26,14 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         if (ProcessMsg.isExist(ctx)) {
+            String username = ProcessMsg.online2.get(ctx);
+            log.info("用户 {} 下线!", username);
             ProcessMsg.remove(ctx);
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        log.debug(cause.getMessage(), cause);
     }
 }

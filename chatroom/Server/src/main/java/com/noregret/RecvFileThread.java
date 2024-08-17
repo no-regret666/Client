@@ -1,13 +1,15 @@
 package com.noregret;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.*;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+@Slf4j
 public class RecvFileThread extends Thread {
     private final int fromPort;
-    private int fileID;
+    private final int fileID;
 
     public RecvFileThread(int fromPort,int fileID) {
         this.fromPort = fromPort;
@@ -35,7 +37,7 @@ public class RecvFileThread extends Thread {
 
             System.out.println("文件接收完成!");
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 }

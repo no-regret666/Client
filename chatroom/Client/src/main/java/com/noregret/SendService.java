@@ -324,6 +324,9 @@ public class SendService {
                 }
                 friendMenu(username, map.get(Character.getNumericValue(c)));
             } else {
+                System.out.println("--------------------------");
+                System.out.println(username + " 的好友");
+                System.out.println("--------------------------");
                 System.out.println("你当前未加好友!(q:返回个人主页 z:刷新)");
                 char c = sc.next().charAt(0);
                 sc.nextLine();
@@ -480,7 +483,7 @@ public class SendService {
         send(node);
     }
 
-    public void privateChat(String username, String friendName) throws InterruptedException{
+    public void privateChat(String username, String friendName) throws InterruptedException, IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         System.out.println("开始聊天!(按q退出)");
         ObjectNode node;
@@ -498,11 +501,18 @@ public class SendService {
                 break;
             }
 
-            int status = ClientHandler.queue.take();
-            if (status == 1) {
-                System.out.println(Utils.getColoredString(31, 1, "你已被对方屏蔽!"));
-            } else if (status == 0) {
-                System.out.println(time.toString().substring(0, 19) + " " + username + ":" + content);
+            int code = ClientHandler.queue.take();
+            if(code == 0) {
+                int status = ClientHandler.queue.take();
+                if (status == 1) {
+                    System.out.println(Utils.getColoredString(31, 1, "你已被对方屏蔽!"));
+                } else if (status == 0) {
+                    System.out.println(time.toString().substring(0, 19) + " " + username + ":" + content);
+                }
+            }else if (code == 1) {
+                System.out.println(Utils.getColoredString(31,1,"你们已不是好友!"));
+                listFriend(username);
+                return;
             }
         }
 
@@ -657,6 +667,9 @@ public class SendService {
                 }
                 groupMenu(username, map.get(Character.getNumericValue(c)));
             } else {
+                System.out.println("-------------------------");
+                System.out.println(username + " 的群组");
+                System.out.println("-------------------------");
                 System.out.println("你尚未加入群组!(q:返回个人主页 z:刷新)");
                 char c = sc.next().charAt(0);
                 sc.nextLine();
@@ -728,7 +741,7 @@ public class SendService {
         }
     }
 
-    public void groupChat(String username, String groupName) throws InterruptedException {
+    public void groupChat(String username, String groupName) throws InterruptedException, IOException {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode node;
         System.out.println("开始聊天!(按q退出)");
@@ -746,11 +759,18 @@ public class SendService {
                 break;
             }
 
-            int status = ClientHandler.queue.take();
-            if (status == 1) {
-                System.out.println(Utils.getColoredString(31, 1, "你已被禁言!"));
-            } else if (status == 0) {
-                System.out.println(time.toString().substring(0, 19) + " " + username + ":" + content);
+            int code = ClientHandler.queue.take();
+            if(code == 0) {
+                int status = ClientHandler.queue.take();
+                if (status == 1) {
+                    System.out.println(Utils.getColoredString(31, 1, "你已被禁言!"));
+                } else if (status == 0) {
+                    System.out.println(time.toString().substring(0, 19) + " " + username + ":" + content);
+                }
+            }else{
+                System.out.println(Utils.getColoredString(31,1,"你已不在该群聊!"));
+                listGroup(username);
+                return;
             }
         }
     }

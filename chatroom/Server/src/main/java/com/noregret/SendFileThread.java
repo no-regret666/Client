@@ -1,17 +1,16 @@
 package com.noregret;
 
-import com.noregret.Mapper.FileMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+@Slf4j
 public class SendFileThread extends Thread {
     private final int toPort;
-    private int fileID;
-    private String filename;
+    private final int fileID;
+    private final String filename;
 
     public SendFileThread(int fromPort,int fileID,String filename) {
         this.toPort = fromPort;
@@ -41,7 +40,7 @@ public class SendFileThread extends Thread {
             dos.close();
             socket.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error(e.getMessage());
         }
     }
 }

@@ -8,6 +8,7 @@ import com.noregret.Pojo.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+@Slf4j
 @Component
 public class ProcessMsg {
     @Autowired
@@ -73,6 +75,7 @@ public class ProcessMsg {
                 if (password.equals(user.getPassword())) {
                     if (!isExist(username)) {
                         node.put("code", 100); //登录成功
+                        log.info("用户 {} 上线!", username);
                         online1.put(username, channel);
                         online2.put(channel, username);
                     } else {
@@ -195,6 +198,8 @@ public class ProcessMsg {
             String friendName = msg.get("friendName").asText();
             friendMapper.deleteFriend(username, friendName);
             friendMapper.deleteFriend(friendName, username);
+            messageMapper1.delete(username,friendName);
+            messageMapper1.delete(friendName,username);
         } else if (String.valueOf(MsgType.MSG_OFFLINE).equals(type)) {
             String username = msg.get("username").asText();
             ChannelHandlerContext ctx = online1.get(username);
@@ -223,12 +228,25 @@ public class ProcessMsg {
                 return;
             }
 
-            int status = friendMapper.selectStatus(toUser, fromUser);
-            ObjectNode node2 = mapper.createObjectNode();
-            node2.put("type",String.valueOf(MsgType.MSG_GET_STATUS));
-            node2.put("status",status);
-            send(node2, channel);
-            if(status == 1){
+            //判断还是不是好友
+            Integer code = friendMapper.selectFriend2(fromUser,toUser);
+            if (code != null) {
+                //是好友，获取屏蔽状态
+                int status = friendMapper.selectStatus(toUser, fromUser);
+
+                ObjectNode node2 = mapper.createObjectNode();
+                node2.put("code",0); //是好友
+                node2.put("type", String.valueOf(MsgType.MSG_GET_STATUS));
+                node2.put("status", status);
+                send(node2, channel);
+                if (status == 1) {
+                    return;
+                }
+            }else{
+                ObjectNode node2 = mapper.createObjectNode();
+                node2.put("code",1); //不是好友
+                node2.put("type", String.valueOf(MsgType.MSG_GET_STATUS));
+                send(node2, channel);
                 return;
             }
 
@@ -238,7 +256,7 @@ public class ProcessMsg {
             node.put("time", time);
             node.put("fromUser", fromUser);
 
-            if (messageMapper1.count(fromUser, toUser) >= 500) {
+            if (messageMapper1.count(fromUser, toUser) >= 50) {
                 messageMapper1.delete(fromUser, toUser);
             }
 
@@ -444,12 +462,22 @@ public class ProcessMsg {
                 return;
             }
 
-            int status = groupMapper.getStatus(to, from);
-            ObjectNode node2 = mapper.createObjectNode();
-            node2.put("type", String.valueOf(MsgType.MSG_GET_STATUS));
-            node2.put("status", status);
-            send(node2, channel);
-            if(status == 1){
+            Integer code = groupMapper.getId(to,from);
+            if (code != null) {
+                int status = groupMapper.getStatus(to, from);
+                ObjectNode node2 = mapper.createObjectNode();
+                node2.put("type", String.valueOf(MsgType.MSG_GET_STATUS));
+                node2.put("code", 0);
+                node2.put("status", status);
+                send(node2, channel);
+                if (status == 1) {
+                    return;
+                }
+            }else{
+                ObjectNode node2 = mapper.createObjectNode();
+                node2.put("type", String.valueOf(MsgType.MSG_GET_STATUS));
+                node2.put("code", 1);
+                send(node2, channel);
                 return;
             }
 
@@ -460,7 +488,7 @@ public class ProcessMsg {
             node.put("content", content);
             node.put("time", time.toString());
 
-            if (messageMapper2.count(to) >= 500) {
+            if (messageMapper2.count(to) >= 50) {
                 messageMapper2.delete(to);
             }
 
@@ -605,7 +633,8 @@ public class ProcessMsg {
         try (ServerSocket serverSocket = new ServerSocket(0)){
             return serverSocket.getLocalPort();
         } catch (IOException e) {
-            throw new IllegalStateException("cannot find available port:" + e.getMessage());
+            log.error("无法获取空闲端口:{}", e.getMessage());
+            return 0;
         }
     }
 }

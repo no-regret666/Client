@@ -47,4 +47,7 @@ public interface GroupMapper {
     @Delete("delete from `group` where group_name in (select group_name from `group` where member" +
             " = #{username} and role = 1) or member = #{username}")
     void deleteUser(String username);
+
+    @Select("select id from `group` where group_name = #{groupName} and member = #{member}")
+    Integer getId(String groupName, String member);
 }
