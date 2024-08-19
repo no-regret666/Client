@@ -1,4 +1,4 @@
-package com.noregret;
+package com.noregret.Service;
 
 import lombok.extern.slf4j.Slf4j;
 
