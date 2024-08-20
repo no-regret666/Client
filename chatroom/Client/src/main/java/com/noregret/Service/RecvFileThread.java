@@ -27,21 +27,32 @@ public class RecvFileThread extends Thread {
             log.error(e.getMessage());
         }
 
+        byte[] buffer = new byte[1024 * 1024];
+        long totalBytes = 0;
+        long bytesReceived = 0;
+        
         try{
             DataInputStream dis = new DataInputStream(socket.getInputStream());
             String filename = dis.readUTF();
             FileOutputStream fos = new FileOutputStream(filename);
-            byte[] buffer = new byte[1024];
-            int len;
-            while((len = dis.read(buffer)) != -1){
-                fos.write(buffer,0,len);
+            while (true) {
+                int len = dis.read(buffer);
+                if (len == -1) {
+                    break;
+                }
+                fos.write(buffer, 0, len);
                 fos.flush();
-            }
-            dis.close();
-            fos.close();
-            socket.close();
+                bytesReceived += len;
+                totalBytes += len;
 
-            System.out.println(Utils.getColoredString(33,1,"接收完成!"));
+                // 可以在这里添加进度报告等功能
+                System.out.println("Received " + bytesReceived + " of " + totalBytes + " bytes");
+                dis.close();
+                fos.close();
+                socket.close();
+
+                System.out.println(Utils.getColoredString(33,1,"接收完成!"));
+            }
         } catch (IOException e) {
             log.error(e.getMessage());
         }
