@@ -36,13 +36,14 @@ public class SendFileThread extends Thread {
              DataOutputStream dos = new DataOutputStream(socket.getOutputStream())){
 
             while (bytesSent < totalBytes) {
-            int len = fis.read(buffer);
-            dos.write(buffer, 0, len);
-            dos.flush();
-            bytesSent += len;
-
-            // 可以在这里添加进度报告等功能
-            System.out.println("Sent " + bytesSent + " of " + totalBytes + " bytes");
+                int len = fis.read(buffer);
+                dos.write(buffer, 0, len);
+                dos.flush();
+                bytesSent += len;
+            
+                // 可以在这里添加进度报告等功能
+                System.out.println("Sent " + bytesSent + " of " + totalBytes + " bytes");
+            }
                 
         } catch (IOException e) {
             log.error(e.getMessage());
