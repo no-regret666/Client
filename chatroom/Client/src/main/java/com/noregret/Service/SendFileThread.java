@@ -28,19 +28,22 @@ public class SendFileThread extends Thread {
         }
 
         String filename = file.getName();
+        byte[] buffer = new byte[1024 * 1024];
+        int len;
+        long totalBytes = file.length();
+        long bytesSent = 0;
         try (FileInputStream fis = new FileInputStream(file);
              DataOutputStream dos = new DataOutputStream(socket.getOutputStream())){
 
-            byte[] buffer = new byte[1024];
-            int len;
-            while ((len = fis.read(buffer)) != -1) {
-                dos.write(buffer, 0, len);
-                dos.flush();
-            }
+            while (bytesSent < totalBytes) {
+            int len = fis.read(buffer);
+            dos.write(buffer, 0, len);
+            dos.flush();
+            bytesSent += len;
 
-            socket.close();
-
-            System.out.println(Utils.getColoredString(33,1,filename + " 发送完毕!"));
+            // 可以在这里添加进度报告等功能
+            System.out.println("Sent " + bytesSent + " of " + totalBytes + " bytes");
+                
         } catch (IOException e) {
             log.error(e.getMessage());
         }
